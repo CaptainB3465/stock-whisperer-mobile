@@ -1,0 +1,146 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+
+export default function RegisterScreen() {
+  const { colors } = useTheme();
+  const { signIn } = useAuth();
+  const router = useRouter();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleRegister = async () => {
+    if (!email || !password) {
+      setErrorMsg('Please enter both email and password.');
+      return;
+    }
+    setLoading(true);
+    // Mock network request logic for testing
+    setTimeout(async () => {
+      await signIn(email);
+      setLoading(false);
+      router.replace('/(tabs)');
+    }, 1500);
+  };
+
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <IconSymbol name="chevron.right" size={28} color={colors.text} style={{ transform: [{ rotate: '180deg' }] }} />
+        </Pressable>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
+        <Text style={[styles.subtitle, { color: colors.subText }]}>Join the exclusive Java Pit community.</Text>
+
+        {errorMsg ? <Text style={[styles.error, { color: colors.badgeNegative }]}>{errorMsg}</Text> : null}
+
+        <View style={styles.form}>
+          <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
+          <TextInput 
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
+            placeholder="member@example.com"
+            placeholderTextColor={colors.subText}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+          <TextInput 
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
+            placeholder="••••••••"
+            placeholderTextColor={colors.subText}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          <Pressable 
+            onPress={handleRegister} 
+            disabled={loading}
+            style={({pressed}) => [styles.btnPrimary, { opacity: pressed || loading ? 0.7 : 1 }]}
+          >
+            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Secure Registration</Text>}
+          </Pressable>
+        </View>
+
+        <Text style={[styles.terms, { color: colors.subText }]}>
+          By creating an account, you agree to our <Text style={{ color: colors.text }}>Terms of Service</Text> and <Text style={{ color: colors.text }}>Privacy Policy</Text>.
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    padding: 16,
+  },
+  backBtn: {
+    padding: 8,
+    alignSelf: 'flex-start',
+  },
+  content: {
+    padding: 24,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 32,
+  },
+  form: {
+    marginBottom: 24,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  input: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 24,
+    fontSize: 16,
+  },
+  btnPrimary: {
+    backgroundColor: '#34C759',
+    paddingVertical: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  btnPrimaryText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  error: {
+    marginBottom: 16,
+    fontWeight: 'bold',
+  },
+  terms: {
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 16,
+    paddingHorizontal: 16,
+  },
+});

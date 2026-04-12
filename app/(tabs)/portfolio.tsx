@@ -1,29 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
 import PortfolioSummary from '@/components/PortfolioSummary';
 import StockCard from '@/components/StockCard';
 import { useTheme } from '@/context/ThemeContext';
-import { useWatchlist } from '@/context/WatchlistContext';
 import { fetchQuote } from '@/services/finnhub';
 
-export default function HomeScreen() {
+const PORTFOLIO_TICKERS = ['AAPL', 'AMZN'];
+
+export default function PortfolioScreen() {
   const { colors } = useTheme();
-  const { watchlist, isLoaded: watchlistLoaded } = useWatchlist();
   const [stocks, setStocks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadWatchlistStocks() {
-      if (!watchlistLoaded) return;
-      if (watchlist.length === 0) {
-        setStocks([]);
-        setLoading(false);
-        return;
-      }
-      
-      setLoading(true);
+    async function loadPortfolio() {
       const results = await Promise.all(
-        watchlist.map(async (ticker) => {
+        PORTFOLIO_TICKERS.map(async (ticker) => {
           const quote = await fetchQuote(ticker);
           if (quote) {
             return { ticker, price: quote.currentPrice, change: quote.change, changePercent: quote.percentChange };
@@ -34,17 +26,14 @@ export default function HomeScreen() {
       setStocks(results.filter(Boolean));
       setLoading(false);
     }
-    loadWatchlistStocks();
-  }, [watchlist, watchlistLoaded]);
+    loadPortfolio();
+  }, []);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={[styles.greeting, { color: colors.text }]}>Good Morning, Brian 👋</Text>
-          <Text style={[styles.subtitle, { color: colors.subText }]}>Let's see how your stocks are doing</Text>
-        </View>
-
+        <Text style={[styles.title, { color: colors.text }]}>Your Portfolio</Text>
+        
         <PortfolioSummary 
           balance={12450.75} 
           dailyChange={345.20} 
@@ -52,15 +41,11 @@ export default function HomeScreen() {
         />
 
         <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Your Watchlist 📈</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Holdings</Text>
         </View>
 
         {loading ? (
           <ActivityIndicator size="large" color={colors.text} />
-        ) : stocks.length === 0 ? (
-          <Text style={[{ color: colors.subText, textAlign: 'center', marginTop: 20 }]}>
-            Your watchlist is empty. Go to Search to add some assets!
-          </Text>
         ) : (
           stocks.map((stock) => (
             <StockCard 
@@ -85,16 +70,10 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 40,
   },
-  header: {
-    marginBottom: 24,
-  },
-  greeting: {
+  title: {
     fontSize: 28,
     fontWeight: 'bold',
-  },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 4,
+    marginBottom: 20,
   },
   sectionHeader: {
     marginVertical: 16,
