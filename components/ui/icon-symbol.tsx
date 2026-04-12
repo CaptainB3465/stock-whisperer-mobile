@@ -19,10 +19,10 @@ const MAPPING = {
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
   'magnifyingglass': 'search',
-  'briefcase.fill': 'work',
+  'briefcase.fill': 'show-chart',
   'gearshape.fill': 'settings',
-  'bell.fill': 'notifications',
-  'play.rectangle.fill': 'smart-display',
+  'bell.fill': 'campaign',
+  'play.rectangle.fill': 'live-tv',
 } as IconMapping;
 
 /**
