@@ -3,15 +3,19 @@ import { View, Text, StyleSheet, ScrollView, SafeAreaView, Pressable, RefreshCon
 import { useTheme } from '@/context/ThemeContext';
 import { useWatchlist } from '@/context/WatchlistContext';
 import { useAuth } from '@/context/AuthContext';
+import { useSubscription } from '@/context/SubscriptionContext';
 import { useAlertChecker } from '@/hooks/useAlertChecker';
 import { useWatchlistData } from '@/hooks/useWatchlistData';
 import { StockCard } from '@/components/StockCard';
 import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
   const { watchlist } = useWatchlist();
   const { user } = useAuth();
+  const { isProUser } = useSubscription();
+  const router = useRouter();
   const [sortMode, setSortMode] = useState<'gainers' | 'losers' | 'default'>('gainers');
   const [refreshing, setRefreshing] = useState(false);
 
@@ -97,13 +101,40 @@ export default function HomeScreen() {
             Your watchlist is empty. Search for stocks to add them!
           </Text>
         ) : (
-          stocks.map(stock =>
-            stock.loading ? (
-              <SkeletonLoader key={stock.ticker} />
-            ) : (
-              <StockCard key={stock.ticker} ticker={stock.ticker} quote={stock.quote} />
-            )
-          )
+          <>
+            {(isProUser ? stocks : stocks.slice(0, 3)).map(stock =>
+              stock.loading ? (
+                <SkeletonLoader key={stock.ticker} />
+              ) : (
+                <StockCard key={stock.ticker} ticker={stock.ticker} quote={stock.quote} />
+              )
+            )}
+            
+            {!isProUser && stocks.length > 3 && (
+              <Pressable 
+                onPress={() => router.push('/paywall')}
+                style={({ pressed }) => [
+                  styles.lockCard, 
+                  { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.9 : 1 }
+                ]}
+              >
+                <View style={styles.lockIconBox}>
+                  <Text style={styles.lockEmoji}>🔒</Text>
+                </View>
+                <View style={styles.lockContent}>
+                  <Text style={[styles.lockTitle, { color: colors.text }]}>
+                    +{stocks.length - 3} More Assets Hidden
+                  </Text>
+                  <Text style={[styles.lockSub, { color: colors.subText }]}>
+                    Upgrade to PRO to unlock your full watchlist.
+                  </Text>
+                </View>
+                <View style={styles.upgradeBadge}>
+                  <Text style={styles.upgradeBadgeText}>UPGRADE</Text>
+                </View>
+              </Pressable>
+            )}
+          </>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -133,4 +164,33 @@ const styles = StyleSheet.create({
   sortBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
   sortText: { fontSize: 12, fontWeight: '600' },
   empty: { textAlign: 'center', marginTop: 40, fontSize: 16 },
+  lockCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    marginTop: 8,
+    borderStyle: 'dashed',
+  },
+  lockIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  lockEmoji: { fontSize: 20 },
+  lockContent: { flex: 1 },
+  lockTitle: { fontSize: 16, fontWeight: 'bold' },
+  lockSub: { fontSize: 12, marginTop: 2 },
+  upgradeBadge: {
+    backgroundColor: '#34C759',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  upgradeBadgeText: { color: 'white', fontSize: 10, fontWeight: 'bold' },
 });
