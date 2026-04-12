@@ -44,7 +44,7 @@ export default function SettingsScreen() {
   const { colors, theme, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { isProUser, resetToFree } = useSubscription();
-  const { isAdmin, setAdminMode } = useAdmin();
+  const { isAdmin, setAdminMode, canAccessAdmin } = useAdmin();
   const router = useRouter();
 
   const [feedbackVisible, setFeedbackVisible] = useState(false);
@@ -191,26 +191,30 @@ export default function SettingsScreen() {
         {/* Account */}
         <Text style={[styles.section, { color: colors.subText }]}>ACCOUNT</Text>
         <View style={[styles.group, { borderColor: colors.border }]}>
-          {isAdmin && (
+          {canAccessAdmin && (
             <>
+              {isAdmin && (
+                <>
+                  <SettingRow
+                    icon="gearshape.fill"
+                    label="Admin Panel"
+                    sublabel="Manage Dark Pool Prints"
+                    onPress={() => router.push('/admin')}
+                    colors={colors}
+                  />
+                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                </>
+              )}
               <SettingRow
                 icon="gearshape.fill"
-                label="Admin Panel"
-                sublabel="Manage Dark Pool Prints"
-                onPress={() => router.push('/admin')}
+                label={isAdmin ? 'Exit Admin Mode' : 'Enable Admin Mode'}
+                sublabel={isAdmin ? 'Switch back to member view' : 'For authorized administrators only'}
+                onPress={() => setAdminMode(!isAdmin)}
                 colors={colors}
               />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
             </>
           )}
-          <SettingRow
-            icon="gearshape.fill"
-            label={isAdmin ? 'Exit Admin Mode' : 'Enable Admin Mode'}
-            sublabel={isAdmin ? 'Switch back to member view' : 'For authorized administrators only'}
-            onPress={() => setAdminMode(!isAdmin)}
-            colors={colors}
-          />
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <SettingRow
             icon="gearshape.fill"
             label="Sign Out"

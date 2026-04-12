@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from './AuthContext';
 
 export interface DarkPoolPrint {
   id: string;
@@ -19,7 +19,13 @@ interface AdminContextProps {
   addPrint: (print: Omit<DarkPoolPrint, 'id'>) => Promise<void>;
   updatePrint: (id: string, print: Partial<DarkPoolPrint>) => Promise<void>;
   deletePrint: (id: string) => Promise<void>;
+  canAccessAdmin: boolean;
 }
+
+const AUTHORIZED_ADMINS = [
+  'brian@mail.com', // Replace with your actual admin email
+  'veronica@mail.com',
+];
 
 const DEFAULT_PRINTS: DarkPoolPrint[] = [
   { id: '1', ticker: 'SPY', type: 'Late Print', shares: '2.5M', price: 512.43, bullish: 513, bearish: 512, time: '10:02 AM' },
@@ -31,8 +37,18 @@ const DEFAULT_PRINTS: DarkPoolPrint[] = [
 const AdminContext = createContext<AdminContextProps | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [prints, setPrints] = useState<DarkPoolPrint[]>(DEFAULT_PRINTS);
+
+  const canAccessAdmin = user ? AUTHORIZED_ADMINS.includes(user.email.toLowerCase()) : false;
+
+  // Auto-disable admin mode if user is not authorized
+  useEffect(() => {
+    if (!canAccessAdmin && isAdmin) {
+      setIsAdmin(false);
+    }
+  }, [canAccessAdmin, isAdmin]);
 
   useEffect(() => {
     const load = async () => {
@@ -62,8 +78,15 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     await save(newPrints);
   };
 
-  return (
-    <AdminContext.Provider value={{ isAdmin, setAdminMode: setIsAdmin, prints, addPrint, updatePrint, deletePrint }}>
+    <AdminContext.Provider value={{
+      isAdmin,
+      setAdminMode: setIsAdmin,
+      prints,
+      addPrint,
+      updatePrint,
+      deletePrint,
+      canAccessAdmin
+    }}>
       {children}
     </AdminContext.Provider>
   );

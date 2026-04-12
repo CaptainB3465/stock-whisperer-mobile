@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, SafeAreaView, ActivityIndicator } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useTheme } from '@/context/ThemeContext';
-import { fetchQuote } from '@/services/finnhub';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { fetchQuote } from '@/services/api/stocks';
 import { useRouter } from 'expo-router';
 
 export default function SearchScreen() {
@@ -14,13 +15,24 @@ export default function SearchScreen() {
   const handleSearch = async () => {
     if (!query) return;
     setLoading(true);
-    const quote = await fetchQuote(query.toUpperCase());
-    setLoading(false);
-    
-    if (quote) {
-      router.push({ pathname: '/modal', params: { ticker: query.toUpperCase(), price: quote.currentPrice, changePercent: quote.percentChange }});
-    } else {
-      alert('Ticker not found or API limit reached.');
+    try {
+      const quote = await fetchQuote(query.toUpperCase());
+      if (quote) {
+        router.push({ 
+          pathname: '/modal', 
+          params: { 
+            ticker: query.toUpperCase(), 
+            price: quote.currentPrice, 
+            changePercent: quote.percentChange 
+          }
+        });
+      } else {
+        alert('Ticker not found or API limit reached.');
+      }
+    } catch (e) {
+      alert('Search failed. Please check your connection.');
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -35,8 +35,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadAuth();
   }, []);
 
-  const signIn = async (email: string, name: string = 'Member') => {
-    const newUser = { email, name };
+  const signIn = async (email: string, name?: string) => {
+    // If no name provided (login flow), check if we already have a stored name for this user
+    let resolvedName = name;
+    if (!resolvedName) {
+      try {
+        const existing = await AsyncStorage.getItem('@auth_user');
+        if (existing) {
+          const parsed = JSON.parse(existing);
+          if (parsed.email === email && parsed.name) {
+            resolvedName = parsed.name;
+          }
+        }
+      } catch {}
+    }
+    const newUser = { email, name: resolvedName || email.split('@')[0] };
     setUser(newUser);
     await AsyncStorage.setItem('@auth_user', JSON.stringify(newUser));
   };
