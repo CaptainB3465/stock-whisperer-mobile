@@ -10,20 +10,20 @@ export default function RegisterScreen() {
   const { signIn } = useAuth();
   const router = useRouter();
 
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleRegister = async () => {
-    if (!email || !password) {
-      setErrorMsg('Please enter both email and password.');
+    if (!name || !email || !password) {
+      setErrorMsg('Please fill in all fields.');
       return;
     }
     setLoading(true);
-    // Mock network request logic for testing
     setTimeout(async () => {
-      await signIn(email);
+      await signIn(email, name);
       setLoading(false);
       router.replace('/(tabs)');
     }, 1500);
@@ -41,12 +41,21 @@ export default function RegisterScreen() {
         <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
         <Text style={[styles.subtitle, { color: colors.subText }]}>Join the exclusive Java Pit community.</Text>
 
-        {errorMsg ? <Text style={[styles.error, { color: colors.badgeNegative }]}>{errorMsg}</Text> : null}
+        {errorMsg ? <Text style={[styles.error]}>{errorMsg}</Text> : null}
 
         <View style={styles.form}>
+          <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
+            placeholder="e.g. Veronica Smith"
+            placeholderTextColor={colors.subText}
+            value={name}
+            onChangeText={setName}
+          />
+
           <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
-          <TextInput 
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
             placeholder="member@example.com"
             placeholderTextColor={colors.subText}
             keyboardType="email-address"
@@ -56,8 +65,8 @@ export default function RegisterScreen() {
           />
 
           <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-          <TextInput 
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
+          <TextInput
+            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]}
             placeholder="••••••••"
             placeholderTextColor={colors.subText}
             secureTextEntry
@@ -65,17 +74,19 @@ export default function RegisterScreen() {
             onChangeText={setPassword}
           />
 
-          <Pressable 
-            onPress={handleRegister} 
+          <Pressable
+            onPress={handleRegister}
             disabled={loading}
-            style={({pressed}) => [styles.btnPrimary, { opacity: pressed || loading ? 0.7 : 1 }]}
+            style={({ pressed }) => [styles.btnPrimary, { opacity: pressed || loading ? 0.7 : 1 }]}
           >
             {loading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Secure Registration</Text>}
           </Pressable>
         </View>
 
         <Text style={[styles.terms, { color: colors.subText }]}>
-          By creating an account, you agree to our <Text style={{ color: colors.text }}>Terms of Service</Text> and <Text style={{ color: colors.text }}>Privacy Policy</Text>.
+          By creating an account, you agree to our{' '}
+          <Text style={{ color: colors.text }}>Terms of Service</Text> and{' '}
+          <Text style={{ color: colors.text }}>Privacy Policy</Text>.
         </Text>
       </View>
     </SafeAreaView>
@@ -83,64 +94,17 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    padding: 16,
-  },
-  backBtn: {
-    padding: 8,
-    alignSelf: 'flex-start',
-  },
-  content: {
-    padding: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 32,
-  },
-  form: {
-    marginBottom: 24,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  input: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 24,
-    fontSize: 16,
-  },
-  btnPrimary: {
-    backgroundColor: '#34C759',
-    paddingVertical: 18,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  btnPrimaryText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  error: {
-    marginBottom: 16,
-    fontWeight: 'bold',
-  },
-  terms: {
-    fontSize: 12,
-    textAlign: 'center',
-    marginTop: 16,
-    paddingHorizontal: 16,
-  },
+  container: { flex: 1 },
+  header: { padding: 16 },
+  backBtn: { padding: 8, alignSelf: 'flex-start' },
+  content: { padding: 24 },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 8 },
+  subtitle: { fontSize: 16, marginBottom: 32 },
+  form: { marginBottom: 24 },
+  label: { fontSize: 14, fontWeight: 'bold', marginBottom: 8, marginLeft: 4 },
+  input: { padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 24, fontSize: 16 },
+  btnPrimary: { backgroundColor: '#34C759', paddingVertical: 18, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+  btnPrimaryText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+  error: { color: '#FF3B30', marginBottom: 16, fontWeight: 'bold' },
+  terms: { fontSize: 12, textAlign: 'center', marginTop: 16, paddingHorizontal: 16 },
 });

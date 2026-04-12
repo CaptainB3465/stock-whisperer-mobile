@@ -4,13 +4,22 @@ import PortfolioSummary from '@/components/PortfolioSummary';
 import StockCard from '@/components/StockCard';
 import { useTheme } from '@/context/ThemeContext';
 import { useWatchlist } from '@/context/WatchlistContext';
+import { useAuth } from '@/context/AuthContext';
 import { fetchQuote } from '@/services/finnhub';
 
 export default function HomeScreen() {
   const { colors } = useTheme();
   const { watchlist, isLoaded: watchlistLoaded } = useWatchlist();
+  const { user } = useAuth();
   const [stocks, setStocks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+  };
 
   useEffect(() => {
     async function loadWatchlistStocks() {
@@ -41,7 +50,7 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={[styles.greeting, { color: colors.text }]}>Good Morning, Brian 👋</Text>
+          <Text style={[styles.greeting, { color: colors.text }]}>{getGreeting()}, {user?.name ?? 'Member'} 👋</Text>
           <Text style={[styles.subtitle, { color: colors.subText }]}>Let's see how your stocks are doing</Text>
         </View>
 

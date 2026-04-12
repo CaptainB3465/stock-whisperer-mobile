@@ -2,12 +2,13 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface User {
+  name: string;
   email: string;
 }
 
 interface AuthContextProps {
   user: User | null;
-  signIn: (email: string) => Promise<void>;
+  signIn: (email: string, name?: string) => Promise<void>;
   signOut: () => Promise<void>;
   isLoaded: boolean;
 }
@@ -21,9 +22,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        const email = await AsyncStorage.getItem('@auth_email');
-        if (email) {
-          setUser({ email });
+        const storedUser = await AsyncStorage.getItem('@auth_user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
         }
       } catch (e) {
         console.error('Failed to load session.', e);
@@ -34,14 +35,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadAuth();
   }, []);
 
-  const signIn = async (email: string) => {
-    setUser({ email });
-    await AsyncStorage.setItem('@auth_email', email);
+  const signIn = async (email: string, name: string = 'Member') => {
+    const newUser = { email, name };
+    setUser(newUser);
+    await AsyncStorage.setItem('@auth_user', JSON.stringify(newUser));
   };
 
   const signOut = async () => {
     setUser(null);
-    await AsyncStorage.removeItem('@auth_email');
+    await AsyncStorage.removeItem('@auth_user');
   };
 
   return (
