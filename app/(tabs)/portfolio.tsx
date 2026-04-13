@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, ActivityIndicator } from 'react-native';
-import PortfolioSummary from '@/components/PortfolioSummary';
-import StockCard from '@/components/StockCard';
 import { useTheme } from '@/context/ThemeContext';
-import { fetchQuote } from '@/services/finnhub';
+import { StockCard } from '@/components/StockCard';
+import { fetchQuote } from '@/services/api/stocks';
 
 const PORTFOLIO_TICKERS = ['AAPL', 'AMZN'];
 
@@ -17,13 +16,10 @@ export default function PortfolioScreen() {
       const results = await Promise.all(
         PORTFOLIO_TICKERS.map(async (ticker) => {
           const quote = await fetchQuote(ticker);
-          if (quote) {
-            return { ticker, price: quote.currentPrice, change: quote.change, changePercent: quote.percentChange };
-          }
-          return null;
+          return { ticker, quote };
         })
       );
-      setStocks(results.filter(Boolean));
+      setStocks(results);
       setLoading(false);
     }
     loadPortfolio();
@@ -34,12 +30,6 @@ export default function PortfolioScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={[styles.title, { color: colors.text }]}>Your Portfolio</Text>
         
-        <PortfolioSummary 
-          balance={12450.75} 
-          dailyChange={345.20} 
-          dailyChangePercent={2.85} 
-        />
-
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Holdings</Text>
         </View>
@@ -51,9 +41,7 @@ export default function PortfolioScreen() {
             <StockCard 
               key={stock.ticker}
               ticker={stock.ticker}
-              price={stock.price}
-              change={stock.change}
-              changePercent={stock.changePercent}
+              quote={stock.quote}
             />
           ))
         )}
@@ -63,23 +51,9 @@ export default function PortfolioScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    padding: 16,
-    paddingTop: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  sectionHeader: {
-    marginVertical: 16,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
+  safeArea: { flex: 1 },
+  container: { padding: 16, paddingTop: 40 },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20 },
+  sectionHeader: { marginVertical: 16 },
+  sectionTitle: { fontSize: 22, fontWeight: 'bold' },
 });
