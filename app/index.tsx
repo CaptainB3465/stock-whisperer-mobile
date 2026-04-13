@@ -1,83 +1,189 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, Pressable,
-  SafeAreaView, ImageBackground, StatusBar,
+  SafeAreaView, ImageBackground, Animated, Dimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+
+const { width } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { user, isLoaded } = useAuth();
+  
+  const [showAnimation, setShowAnimation] = useState(true);
+  
+  // Animation Values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const scaleAnim = useRef(new Animated.Value(1.1)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    if (isLoaded && user) {
-      router.replace('/(tabs)');
-    }
-  }, [user, isLoaded]);
+    // Sequence of animations for the entrance
+    Animated.sequence([
+      Animated.delay(300),
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 2500,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.parallel([
+        Animated.timing(logoOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          friction: 6,
+          useNativeDriver: true,
+        }),
+      ])
+    ]).start();
+
+    // After 4 seconds, transition to the Welcome buttons
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(logoOpacity, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(contentOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        })
+      ]).start(() => {
+        setShowAnimation(false);
+      });
+    }, 4200);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <ImageBackground
-      source={require('@/assets/images/login_background.png')}
-      style={styles.bg}
-      resizeMode="cover"
-    >
-      <StatusBar barStyle="light-content" />
-      {/* Dark overlay for readability */}
-      <View style={styles.overlay} />
+    <View style={styles.container}>
+      <StatusBar style="light" />
+      
+      {/* Shared Background */}
+      <Animated.View style={[styles.bgContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+        <ImageBackground
+          source={{ uri: 'file:///C:/Users/Administrator/.gemini/antigravity/brain/e6306fc4-5682-4017-98db-f96306073cec/stock_trends_background_1776029064624.png' }}
+          style={styles.bg}
+          resizeMode="cover"
+        >
+          <View style={styles.overlay} />
+        </ImageBackground>
+      </Animated.View>
 
       <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-
-          {/* Top Branding */}
-          <View style={styles.branding}>
-            <View style={styles.logoRing}>
-              <Text style={styles.logoEmoji}>📈</Text>
+        {showAnimation ? (
+          /* Entrance Animation Content */
+          <Animated.View style={[
+            styles.animContent,
+            {
+              opacity: logoOpacity,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}>
+            <View style={styles.glassLabel}>
+              <Text style={styles.label}>STOCK WHISPERER • INTELLIGENCE</Text>
             </View>
-            <Text style={styles.appTitle}>The Stock Whisperer</Text>
-            <Text style={styles.tagline}>Institutional Intelligence. Simplified.</Text>
-
-            {/* Live ticker strip */}
-            <View style={styles.ticker}>
-              <Text style={styles.tickerText}>AAPL +1.2%  •  NVDA +3.4%  •  SPY +0.8%  •  TSLA -0.5%</Text>
+            
+            <Text style={styles.animTitle}>Stock Tracker</Text>
+            
+            <View style={styles.dividerRoot}>
+              <View style={styles.divider} />
+              <View style={styles.dividerDot} />
+              <View style={styles.divider} />
             </View>
-          </View>
+            
+            <Text style={styles.animSubtitle}>Your Online Market Analyzer</Text>
+            
+            <View style={styles.loaderContainer}>
+              <Animated.View 
+                style={[
+                  styles.loaderBar, 
+                  { 
+                    width: logoOpacity.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 180]
+                    }) 
+                  }
+                ]} 
+              />
+            </View>
+          </Animated.View>
+        ) : (
+          /* Standard Welcome Content */
+          <Animated.View style={[styles.content, { opacity: contentOpacity }]}>
+            {/* Top Branding */}
+            <View style={styles.branding}>
+              <View style={styles.logoRing}>
+                <Text style={styles.logoEmoji}>📈</Text>
+              </View>
+              <Text style={styles.appTitle}>The Stock Whisperer</Text>
+              <Text style={styles.tagline}>Institutional Intelligence. Simplified.</Text>
 
-          {/* Auth Buttons */}
-          <View style={styles.actionContainer}>
-            <View style={styles.glassCard}>
-              <Text style={styles.cardTitle}>Member Access</Text>
-              <Text style={styles.cardSub}>Sign in to unlock your Dark Pool feed, Java Pit, and weekly forecasts.</Text>
+              {/* Live ticker strip */}
+              <View style={styles.ticker}>
+                <Text style={styles.tickerText}>AAPL +1.2%  •  NVDA +3.4%  •  SPY +0.8%  •  TSLA -0.5%</Text>
+              </View>
+            </View>
 
-              <Pressable
-                onPress={() => router.push('/(auth)/register')}
-                style={({ pressed }) => [styles.btnPrimary, { opacity: pressed ? 0.85 : 1 }]}
-              >
-                <Text style={styles.btnPrimaryText}>Create Account</Text>
+            {/* Auth Buttons */}
+            <View style={styles.actionContainer}>
+              <View style={styles.glassCard}>
+                <Text style={styles.cardTitle}>Member Access</Text>
+                <Text style={styles.cardSub}>Sign in to unlock your Dark Pool feed, Java Pit, and weekly forecasts.</Text>
+
+                <Pressable
+                  onPress={() => router.push('/(auth)/register')}
+                  style={({ pressed }) => [styles.btnPrimary, { opacity: pressed ? 0.85 : 1 }]}
+                >
+                  <Text style={styles.btnPrimaryText}>Create Account</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => router.push('/(auth)/login')}
+                  style={({ pressed }) => [styles.btnOutline, { opacity: pressed ? 0.7 : 1 }]}
+                >
+                  <Text style={styles.btnOutlineText}>Member Sign In</Text>
+                </Pressable>
+              </View>
+
+              <Pressable onPress={() => router.push('/privacy')} style={styles.privacyBtn}>
+                <Text style={styles.privacyText}>🔒 Data Privacy & Encrypted Communications Guarantee</Text>
               </Pressable>
-
-              <Pressable
-                onPress={() => router.push('/(auth)/login')}
-                style={({ pressed }) => [styles.btnOutline, { opacity: pressed ? 0.7 : 1 }]}
-              >
-                <Text style={styles.btnOutlineText}>Member Sign In</Text>
-              </Pressable>
             </View>
-
-            <Pressable onPress={() => router.push('/privacy')} style={styles.privacyBtn}>
-              <Text style={styles.privacyText}>🔒 Data Privacy & Encrypted Communications Guarantee</Text>
-            </Pressable>
-          </View>
-
-        </View>
+          </Animated.View>
+        )}
       </SafeAreaView>
-    </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  bgContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
   bg: {
     flex: 1,
     width: '100%',
@@ -85,10 +191,74 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
   },
   safeArea: {
     flex: 1,
+  },
+  animContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  glassLabel: {
+    backgroundColor: 'rgba(52,199,89,0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(52,199,89,0.3)',
+    marginBottom: 24,
+  },
+  label: {
+    color: '#34C759',
+    fontSize: 10,
+    fontWeight: 'bold',
+    letterSpacing: 2,
+  },
+  animTitle: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 4,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+  },
+  dividerRoot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  divider: {
+    width: 40,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+  },
+  dividerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#34C759',
+    marginHorizontal: 12,
+  },
+  animSubtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+    letterSpacing: 3,
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  loaderContainer: {
+    width: 180,
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 1,
+    overflow: 'hidden',
+  },
+  loaderBar: {
+    height: '100%',
+    backgroundColor: '#34C759',
   },
   content: {
     flex: 1,
@@ -152,7 +322,6 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     marginBottom: 16,
-    backdropFilter: 'blur(20px)',
   },
   cardTitle: {
     color: '#FFFFFF',

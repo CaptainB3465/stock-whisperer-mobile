@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -40,19 +41,31 @@ export default function LoginScreen() {
         return;
       }
 
+      // Check if we have a last logged in user
+      const lastUserStr = await AsyncStorage.getItem('@biometric_last_user');
+      if (!lastUserStr) {
+        Alert.alert(
+          "Personalization Required",
+          "Please sign in with your email and password once to enable personalized biometric login."
+        );
+        return;
+      }
+
+      const lastUser = JSON.parse(lastUserStr);
+
       const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Authenticate to access your Stock Whisperer account',
+        promptMessage: `Sign in as ${lastUser.name}`,
         fallbackLabel: 'Use Passcode',
       });
 
       if (result.success) {
         setLoading(true);
-        // Simulate pulling secure token
+        // Simulate pulling secure token/session
         setTimeout(async () => {
-          await signIn('biometric_member@stockwhisperer.com');
+          await signIn(lastUser.email, lastUser.name);
           setLoading(false);
           router.replace('/(tabs)');
-        }, 500);
+        }, 800);
       } else {
         setErrorMsg('Biometric authentication failed.');
       }

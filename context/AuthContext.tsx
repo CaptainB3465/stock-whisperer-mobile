@@ -49,9 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch {}
     }
+    
     const newUser = { email, name: resolvedName || email.split('@')[0] };
     setUser(newUser);
     await AsyncStorage.setItem('@auth_user', JSON.stringify(newUser));
+    // Specifically save for biometric retrieval so it persists even if signed out
+    await AsyncStorage.setItem('@biometric_last_user', JSON.stringify(newUser));
   };
 
   const signOut = async () => {
