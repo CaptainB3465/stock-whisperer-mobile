@@ -197,23 +197,14 @@ export default function SettingsScreen() {
         <View style={[styles.group, { borderColor: colors.border }]}>
           {canAccessAdmin && (
             <>
-              {isAdmin && (
-                <>
-                  <SettingRow
-                    icon="gearshape.fill"
-                    label="Admin Panel"
-                    sublabel="Manage Dark Pool Prints"
-                    onPress={() => router.push('/admin')}
-                    colors={colors}
-                  />
-                  <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                </>
-              )}
               <SettingRow
                 icon="gearshape.fill"
-                label={isAdmin ? 'Exit Admin Mode' : 'Enable Admin Mode'}
-                sublabel={isAdmin ? 'Switch back to member view' : 'For authorized administrators only'}
-                onPress={() => setAdminMode(!isAdmin)}
+                label="Admin Panel"
+                sublabel="Manage Dark Pool Prints"
+                onPress={() => {
+                  setAdminMode(true);
+                  router.push('/admin');
+                }}
                 colors={colors}
               />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />

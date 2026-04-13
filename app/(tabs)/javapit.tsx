@@ -76,9 +76,19 @@ export default function JavaPitScreen() {
         <View style={styles.whisperSection}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Dark Pool Whispers 🕵️‍♂️</Text>
-            <View style={styles.liveIndicator}>
-              <View style={styles.liveDot} />
-              <Text style={styles.liveText}>LIVE</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              {canAccessAdmin && (
+                <Pressable
+                  onPress={() => router.push('/admin')}
+                  style={({ pressed }) => [styles.adminQuickBtn, { opacity: pressed ? 0.7 : 1 }]}
+                >
+                  <Text style={styles.adminQuickBtnText}>Manage</Text>
+                </Pressable>
+              )}
+              <View style={styles.liveIndicator}>
+                <View style={styles.liveDot} />
+                <Text style={styles.liveText}>LIVE</Text>
+              </View>
             </View>
           </View>
           
@@ -172,6 +182,8 @@ const styles = StyleSheet.create({
   whisperSection: { marginBottom: 32 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   sectionTitle: { fontSize: 20, fontWeight: 'bold' },
+  adminQuickBtn: { backgroundColor: 'rgba(52,199,89,0.15)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: '#34C759' },
+  adminQuickBtnText: { color: '#34C759', fontSize: 13, fontWeight: 'bold' },
   liveIndicator: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(52,199,89,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34C759', marginRight: 6 },
   liveText: { color: '#34C759', fontSize: 10, fontWeight: 'bold' },

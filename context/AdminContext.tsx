@@ -45,22 +45,32 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [prints, setPrints] = useState<DarkPoolPrint[]>(DEFAULT_PRINTS);
 
-  const canAccessAdmin = user ? AUTHORIZED_ADMINS.includes(user.email.toLowerCase()) : false;
+  const canAccessAdmin = user 
+    ? AUTHORIZED_ADMINS.some(email => email.toLowerCase() === user.email.toLowerCase())
+    : false;
 
-  // Auto-disable admin mode if user is not authorized
-  useEffect(() => {
-    if (!canAccessAdmin && isAdmin) {
-      setIsAdmin(false);
-    }
-  }, [canAccessAdmin, isAdmin]);
-
+  // Load persistent state
   useEffect(() => {
     const load = async () => {
-      const stored = await AsyncStorage.getItem('@dark_pool_prints');
-      if (stored) setPrints(JSON.parse(stored));
+      try {
+        const [storedPrints, storedAdminMode] = await Promise.all([
+          AsyncStorage.getItem('@dark_pool_prints'),
+          AsyncStorage.getItem('@is_admin_mode'),
+        ]);
+        
+        if (storedPrints) setPrints(JSON.parse(storedPrints));
+        if (storedAdminMode === 'true' && canAccessAdmin) setIsAdmin(true);
+      } catch (e) {
+        console.error('AdminContext: Load failed', e);
+      }
     };
     load();
-  }, []);
+  }, [canAccessAdmin]);
+
+  const setAdminMode = async (val: boolean) => {
+    setIsAdmin(val);
+    await AsyncStorage.setItem('@is_admin_mode', val ? 'true' : 'false');
+  };
 
   const save = async (newPrints: DarkPoolPrint[]) => {
     setPrints(newPrints);
@@ -85,7 +95,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   return (
     <AdminContext.Provider value={{
       isAdmin,
-      setAdminMode: setIsAdmin,
+      setAdminMode,
       prints,
       addPrint,
       updatePrint,
