@@ -25,8 +25,9 @@ function RootNavigator() {
     if (!user && inAuthGroup) {
       // If not logged in and trying to access tabs, redirect to login
       router.replace('/(auth)/login');
-    } else if (user && (isAuth || isWelcome || isTransition)) {
-      // If logged in and on auth/welcome/transition screens, redirect to tabs
+    } else if (user && (isAuth || isWelcome)) {
+      // If logged in and on auth/welcome screens, redirect to tabs
+      // Note: We removed isTransition from here to allow logout animation
       router.replace('/(tabs)');
     }
   }, [user, isLoaded, segments]);
