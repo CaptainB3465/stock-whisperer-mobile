@@ -57,8 +57,12 @@ export default function SettingsScreen() {
         text: 'Sign Out',
         style: 'destructive',
         onPress: async () => {
-          await signOut();
+          // Navigate to transition first to avoid root layout redirection conflicts
           router.replace('/transition');
+          // Add a small delay then sign out
+          setTimeout(async () => {
+            await signOut();
+          }, 300);
         },
       },
     ]);
