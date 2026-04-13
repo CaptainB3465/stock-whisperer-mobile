@@ -50,20 +50,33 @@ export default function AdminScreen() {
       price: parseFloat(form.price),
       bullish: parseFloat(form.bullish) || 0,
       bearish: parseFloat(form.bearish) || 0,
-      time: form.time || new Date().toLocaleTimeString(),
+      time: form.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
-    if (editTarget) {
-      await updatePrint(editTarget.id, payload);
-    } else {
-      await addPrint(payload);
+
+    try {
+      if (editTarget) {
+        await updatePrint(editTarget.id, payload);
+        Alert.alert('Success', 'Whisper updated successfully.');
+      } else {
+        await addPrint(payload);
+        Alert.alert('Success', 'New whisper broadcasted to Java Pit.');
+      }
+      setModalVisible(false);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to save print.');
     }
-    setModalVisible(false);
   };
 
   const handleDelete = (id: string, ticker: string) => {
-    Alert.alert('Delete Print', `Remove ${ticker} print?`, [
+    Alert.alert('Confirm Delete', `Remove the ${ticker} whisper from Java Pit?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deletePrint(id) },
+      { 
+        text: 'Delete', 
+        style: 'destructive', 
+        onPress: async () => {
+          await deletePrint(id);
+        } 
+      },
     ]);
   };
 

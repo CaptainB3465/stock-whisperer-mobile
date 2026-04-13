@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { WebView } from 'react-native-webview';
 import { useTheme } from '@/context/ThemeContext';
 import { useSubscription } from '@/context/SubscriptionContext';
+import { useAdmin } from '@/context/AdminContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 
 function LockScreen({ onUpgrade, colors }: { onUpgrade: () => void; colors: Record<string, string> }) {
@@ -22,7 +23,6 @@ function LockScreen({ onUpgrade, colors }: { onUpgrade: () => void; colors: Reco
           <Text style={styles.upgradeBtnText}>Upgrade to PRO</Text>
         </Pressable>
 
-        {/* Blurred chat preview */}
         <View style={[styles.previewCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <Text style={[styles.previewLabel, { color: colors.subText }]}>Live Chat Preview</Text>
           <View style={styles.previewBlur}>
@@ -39,6 +39,7 @@ function LockScreen({ onUpgrade, colors }: { onUpgrade: () => void; colors: Reco
 export default function JavaPitScreen() {
   const { colors } = useTheme();
   const { isProUser } = useSubscription();
+  const { prints } = useAdmin();
   const router = useRouter();
 
   if (!isProUser) {
@@ -59,8 +60,10 @@ export default function JavaPitScreen() {
         <Text style={[styles.title, { color: colors.text }]}>The Java Pit</Text>
         <Text style={[styles.subtitle, { color: colors.subText }]}>Live Trading Room & Weekly Whispers</Text>
 
+        {/* Video Player */}
         <View style={styles.videoContainer}>
           <WebView
+            scrollEnabled={false}
             style={styles.webview}
             javaScriptEnabled={true}
             domStorageEnabled={true}
@@ -69,6 +72,39 @@ export default function JavaPitScreen() {
           />
         </View>
 
+        {/* Dark Pool Whispers Feed */}
+        <View style={styles.whisperSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Dark Pool Whispers 🕵️‍♂️</Text>
+            <View style={styles.liveIndicator}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveText}>LIVE</Text>
+            </View>
+          </View>
+          
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.whisperScroll}>
+            {prints.length === 0 ? (
+              <Text style={{ color: colors.subText, fontStyle: 'italic' }}>No whispers detected yet...</Text>
+            ) : (
+              [...prints].reverse().map((print) => (
+                <View key={print.id} style={[styles.whisperCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={styles.whisperTop}>
+                    <Text style={[styles.whisperTicker, { color: colors.text }]}>{print.ticker}</Text>
+                    <Text style={styles.whisperType}>{print.type}</Text>
+                  </View>
+                  <Text style={[styles.whisperPrice, { color: '#34C759' }]}>${print.price}</Text>
+                  <Text style={[styles.whisperMeta, { color: colors.subText }]}>{print.shares} Shares · {print.time}</Text>
+                  <View style={styles.levelsRow}>
+                    <Text style={[styles.levelLabel, { color: '#34C759' }]}>BULL {'>'} {print.bullish}</Text>
+                    <Text style={[styles.levelLabel, { color: '#FF3B30' }]}>BEAR {'<'} {print.bearish}</Text>
+                  </View>
+                </View>
+              ))
+            )}
+          </ScrollView>
+        </View>
+
+        {/* Community Chat */}
         <View style={[styles.chatRoom, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.chatHeader, { borderBottomColor: colors.border }]}>
             <Text style={[styles.chatTitle, { color: colors.text }]}>Live Community Chat</Text>
@@ -133,6 +169,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   webview: { flex: 1 },
+  whisperSection: { marginBottom: 32 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  sectionTitle: { fontSize: 20, fontWeight: 'bold' },
+  liveIndicator: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(52,199,89,0.1)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#34C759', marginRight: 6 },
+  liveText: { color: '#34C759', fontSize: 10, fontWeight: 'bold' },
+  whisperScroll: { gap: 12, paddingRight: 16 },
+  whisperCard: { width: 180, padding: 16, borderRadius: 16, borderWidth: 1 },
+  whisperTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  whisperTicker: { fontSize: 18, fontWeight: 'bold' },
+  whisperType: { fontSize: 9, color: '#34C759', fontWeight: 'bold' },
+  whisperPrice: { fontSize: 22, fontWeight: 'bold', marginBottom: 4 },
+  whisperMeta: { fontSize: 11, marginBottom: 12 },
+  levelsRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.05)', paddingTop: 10 },
+  levelLabel: { fontSize: 10, fontWeight: 'bold' },
   chatRoom: { borderRadius: 16, borderWidth: 1, overflow: 'hidden', minHeight: 300 },
   chatHeader: { flexDirection: 'row', justifyContent: 'space-between', padding: 16, borderBottomWidth: 1 },
   chatTitle: { fontWeight: 'bold', fontSize: 16 },

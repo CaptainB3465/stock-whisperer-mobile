@@ -24,8 +24,11 @@ interface AdminContextProps {
 }
 
 const AUTHORIZED_ADMINS = [
-  'brian@mail.com', // Replace with your actual admin email
+  'brian@mail.com',
   'veronica@mail.com',
+  'admin@stockwhisperer.com',
+  'member@stockwhisperer.com',
+  'stefanie@stockwhisperer.com',
 ];
 
 const DEFAULT_PRINTS: DarkPoolPrint[] = [
