@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, SafeAreaView, ActivityIndicator, Alert, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -75,69 +75,91 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <IconSymbol name="chevron.right" size={28} color={colors.text} style={{ transform: [{ rotate: '180deg' }] }} />
-        </Pressable>
-      </View>
+    <View style={styles.container}>
+      <ImageBackground
+        source={{ uri: 'file:///C:/Users/Administrator/.gemini/antigravity/brain/e6306fc4-5682-4017-98db-f96306073cec/stock_trends_background_1776029064624.png' }}
+        style={styles.bg}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay} />
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.header}>
+            <Pressable onPress={() => router.back()} style={styles.backBtn}>
+              <IconSymbol name="chevron.right" size={28} color="#FFFFFF" style={{ transform: [{ rotate: '180deg' }] }} />
+            </Pressable>
+          </View>
 
-      <View style={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
-        <Text style={[styles.subtitle, { color: colors.subText }]}>Enter your credentials to access the Java Pit.</Text>
+          <View style={styles.content}>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Enter your credentials to access the Java Pit.</Text>
 
-        {errorMsg ? <Text style={[styles.error, { color: colors.badgeNegative }]}>{errorMsg}</Text> : null}
+            {errorMsg ? <Text style={[styles.error, { color: colors.badgeNegative }]}>{errorMsg}</Text> : null}
 
-        <View style={styles.form}>
-          <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
-          <TextInput 
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
-            placeholder="member@example.com"
-            placeholderTextColor={colors.subText}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <View style={styles.form}>
+              <Text style={styles.label}>Email Address</Text>
+              <TextInput 
+                style={[styles.input, { backgroundColor: 'rgba(255,255,255,0.08)', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.2)' }]} 
+                placeholder="member@example.com"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
 
-          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-          <TextInput 
-            style={[styles.input, { backgroundColor: colors.card, color: colors.text, borderColor: colors.border }]} 
-            placeholder="••••••••"
-            placeholderTextColor={colors.subText}
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+              <Text style={styles.label}>Password</Text>
+              <TextInput 
+                style={[styles.input, { backgroundColor: 'rgba(255,255,255,0.08)', color: '#FFFFFF', borderColor: 'rgba(255,255,255,0.2)' }]} 
+                placeholder="••••••••"
+                placeholderTextColor="rgba(255,255,255,0.4)"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
 
-          <Pressable 
-            onPress={handleEmailLogin} 
-            disabled={loading}
-            style={({pressed}) => [styles.btnPrimary, { opacity: pressed || loading ? 0.7 : 1 }]}
-          >
-            {loading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Sign In</Text>}
-          </Pressable>
-        </View>
+              <Pressable 
+                onPress={handleEmailLogin} 
+                disabled={loading}
+                style={({pressed}) => [styles.btnPrimary, { opacity: pressed || loading ? 0.7 : 1 }]}
+              >
+                {loading ? <ActivityIndicator color="white" /> : <Text style={styles.btnPrimaryText}>Sign In</Text>}
+              </Pressable>
+            </View>
 
-        <View style={styles.dividerBox}>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-          <Text style={[styles.dividerText, { color: colors.subText }]}>OR</Text>
-          <View style={[styles.line, { backgroundColor: colors.border }]} />
-        </View>
+            <View style={styles.dividerBox}>
+              <View style={[styles.line, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={[styles.line, { backgroundColor: 'rgba(255,255,255,0.2)' }]} />
+            </View>
 
-        <Pressable 
-          onPress={handleBiometric} 
-          style={({pressed}) => [styles.btnBio, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Text style={[styles.btnBioText, { color: colors.text }]}>Sign In with Face ID / Fingerprint</Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+            <Pressable 
+              onPress={handleBiometric} 
+              style={({pressed}) => [styles.btnBio, { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.2)', opacity: pressed ? 0.7 : 1 }]}
+            >
+              <Text style={styles.btnBioText}>Sign In with Face ID / Fingerprint</Text>
+            </Pressable>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  bg: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+  },
+  safeArea: {
     flex: 1,
   },
   header: {
@@ -154,10 +176,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#FFFFFF',
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 32,
+    color: 'rgba(255,255,255,0.7)',
   },
   form: {
     marginBottom: 24,
@@ -167,6 +191,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     marginLeft: 4,
+    color: '#FFFFFF',
   },
   input: {
     padding: 16,
@@ -199,6 +224,7 @@ const styles = StyleSheet.create({
   dividerText: {
     marginHorizontal: 16,
     fontWeight: 'bold',
+    color: 'rgba(255,255,255,0.6)',
   },
   btnBio: {
     paddingVertical: 18,
@@ -209,6 +235,7 @@ const styles = StyleSheet.create({
   btnBioText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   error: {
     marginBottom: 16,
